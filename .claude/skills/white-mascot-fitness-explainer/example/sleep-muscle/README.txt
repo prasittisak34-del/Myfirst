@@ -1,0 +1,1 @@
+Example: vo.mp3 is already trimmed. Rebuild: python3 tools/key.py example/sleep-muscle && python3 tools/prep_vo.py example/sleep-muscle example/sleep-muscle/vo.mp3 --trim 0 && bash tools/render_all.sh example/sleep-muscle 4 && bash tools/finish.sh example/sleep-muscle "นอนน้อยกล้ามไม่ขึ้น"
