@@ -14,10 +14,13 @@ for f in sorted(glob.glob(os.path.join(raw, '*.jpg'))):
     bg = np.median(border, 0)
     dist = np.sqrt(((a - bg) ** 2).sum(-1))
     al = np.clip((dist - 40) / 45, 0, 1)
+    if n[0] == 'C':   # characters have no green: also drop shaded green gaps (between fingers etc.)
+        dd = a[..., 1] - np.maximum(a[..., 0], a[..., 2]); al = al * np.clip(1 - (dd - 40) / 40, 0, 1)
     al = np.asarray(Image.fromarray((al * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.7))).astype(np.float32) / 255
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     # spill: pull green down only on semi-transparent edge pixels
-    edge = al < 0.98
+    edge = np.asarray(Image.fromarray(((al < 0.98) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(7))) > 0
+    edge &= (g > np.maximum(r, b) + 15)   # only greenish pixels near the cut line
     g2 = np.where(edge, np.minimum(g, np.maximum(r, b) + 8), g)
     im = Image.fromarray(np.dstack([r, g2, b, al * 255]).clip(0, 255).astype(np.uint8), 'RGBA')
     bb = im.getchannel('A').point(lambda v: 255 if v > 20 else 0).getbbox()
